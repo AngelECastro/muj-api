@@ -20,28 +20,22 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Restore project dependencies'
+- task: CopyFiles@2
   inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '*.tgz' 
+    targetFolder: $(Build.ArtifactStagingDirectory)/npm
+  displayName: 'Copy npm package'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build the project - Release'
+- task: CopyFiles@2
   inputs:
-    command: 'build'
-    arguments: '--no-restore --configuration Release'
-    projects: '**/*.csproj'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: 'package.json' 
+    targetFolder: $(Build.ArtifactStagingDirectory)/npm
+  displayName: 'Copy package.json'   
 
-- task: DotNetCoreCLI@2
-  displayName: 'Publish the project - Release'
+- task: PublishPipelineArtifact@1
   inputs:
-    command: 'publish'
-    projects: '**/*.csproj'
-    publishWebProjects: false
-    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
-    zipAfterPublish: true
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  condition: succeeded()
+    targetPath: '$(Build.ArtifactStagingDirectory)/npm'
+    artifactName: npm
+  displayName: 'Publish npm artifact'
